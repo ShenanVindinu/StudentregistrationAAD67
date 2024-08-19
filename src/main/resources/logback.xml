@@ -8,7 +8,7 @@
     </appender>
 
     <appender name="File" class="ch.qos.logback.core.FileAppender">
-        <file>/media/thanura/Data Store/AAD - 67/MiniProjectEE/StudentManagemant2024/app.log</file>
+        <file>C:\Users\wwwsh\Documents\StudentregistrationAAD67\app.log</file>
         <append>true</append>
         <encoder>
             <pattern>
