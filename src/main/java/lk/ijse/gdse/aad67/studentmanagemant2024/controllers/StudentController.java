@@ -27,46 +27,47 @@ import java.sql.*;
 //          @WebInitParam(name = "dbUserName",value = "root"),
 //          @WebInitParam(name = "dbPassword",value = "mysql"),
 //        }
-,loadOnStartup = 2)
+        , loadOnStartup = 2)
 public class StudentController extends HttpServlet {
-    static Logger logger =  LoggerFactory.getLogger(StudentController.class);
+    static Logger logger = LoggerFactory.getLogger(StudentController.class);
     Connection connection;
     static String SAVE_STUDENT = "INSERT INTO student (id,name,city,email,level) VALUES (?,?,?,?,?)";
     static String GET_STUDENT = "SELECT * FROM student WHERE id=?";
     static String UPDATE_STUDENT = "UPDATE student SET name=?,city=?,email=?,level=? WHERE id=?";
     static String DELETE_STUDENT = "DELETE FROM student WHERE id=?";
+
     @Override
     public void init() throws ServletException {
         logger.info("Initializing StudentController with call init method");
         try {
             var ctx = new InitialContext();
             DataSource pool = (DataSource) ctx.lookup("java:comp/env/jdbc/stuRegistration");
-            this.connection =  pool.getConnection();
-        }catch (NamingException | SQLException e){
+            this.connection = pool.getConnection();
+        } catch (NamingException | SQLException e) {
             e.printStackTrace();
         }
     }
 
     @Override
     protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        if(!req.getContentType().toLowerCase().startsWith("application/json")|| req.getContentType() == null){
+        if (!req.getContentType().toLowerCase().startsWith("application/json") || req.getContentType() == null) {
             //send error
             resp.sendError(HttpServletResponse.SC_BAD_REQUEST);
         }
         // Persist Data
-        try (var writer = resp.getWriter()){
+        try (var writer = resp.getWriter()) {
             Jsonb jsonb = JsonbBuilder.create();
             StudentDTO studentDTO = jsonb.fromJson(req.getReader(), StudentDTO.class);
             studentDTO.setId(UtilProcess.generateId());
             var saveData = new StudentDataProcess();
-           if (saveData.saveStudent(studentDTO, connection)){
-               writer.write("Student saved successfully");
-               resp.setStatus(HttpServletResponse.SC_CREATED);
-           }else {
-               writer.write("Save student failed");
-               resp.sendError(HttpServletResponse.SC_BAD_REQUEST);
-               
-           }
+            if (saveData.saveStudent(studentDTO, connection)) {
+                writer.write("Student saved successfully");
+                resp.setStatus(HttpServletResponse.SC_CREATED);
+            } else {
+                writer.write("Save student failed");
+                resp.sendError(HttpServletResponse.SC_BAD_REQUEST);
+
+            }
 
         } catch (JsonException e) {
             resp.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
@@ -77,17 +78,17 @@ public class StudentController extends HttpServlet {
 
     @Override
     protected void doPatch(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        if(!req.getContentType().toLowerCase().startsWith("application/json")|| req.getContentType() == null){
+        if (!req.getContentType().toLowerCase().startsWith("application/json") || req.getContentType() == null) {
             resp.sendError(HttpServletResponse.SC_BAD_REQUEST);
         }
-        try (var writer = resp.getWriter()){
+        try (var writer = resp.getWriter()) {
             var studentID = req.getParameter("stu-id");
             Jsonb jsonb = JsonbBuilder.create();
             var studentDataProcess = new StudentDataProcess();
             var updatedStudent = jsonb.fromJson(req.getReader(), StudentDTO.class);
-            if(studentDataProcess.updateStudent(studentID,updatedStudent,connection)){
+            if (studentDataProcess.updateStudent(studentID, updatedStudent, connection)) {
                 resp.setStatus(HttpServletResponse.SC_NO_CONTENT);
-            }else {
+            } else {
                 writer.write("Update Failed");
                 resp.sendError(HttpServletResponse.SC_BAD_REQUEST);
             }
@@ -101,12 +102,12 @@ public class StudentController extends HttpServlet {
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         var studentId = req.getParameter("id");
         var dataProcess = new StudentDataProcess();
-        try (var writer = resp.getWriter()){
+        try (var writer = resp.getWriter()) {
             var student = dataProcess.getStudent(studentId, connection);
             System.out.println(student);
             resp.setContentType("application/json");
             Jsonb jsonb = JsonbBuilder.create();
-            jsonb.toJson(student,writer);
+            jsonb.toJson(student, writer);
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
@@ -115,11 +116,11 @@ public class StudentController extends HttpServlet {
     @Override
     protected void doDelete(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         var stuId = req.getParameter("stu-id");
-        try (var writer = resp.getWriter()){
+        try (var writer = resp.getWriter()) {
             var studentDataProcess = new StudentDataProcess();
-            if(studentDataProcess.deleteStudent(stuId, connection)){
+            if (studentDataProcess.deleteStudent(stuId, connection)) {
                 resp.setStatus(HttpServletResponse.SC_NO_CONTENT);
-            }else {
+            } else {
                 resp.sendError(HttpServletResponse.SC_BAD_REQUEST);
                 writer.write("Delete Failed");
             }
