@@ -7,11 +7,12 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 
-public final class  StudentDataProcess implements StudentData {
+public final class StudentDataProcess implements StudentData {
     static String SAVE_STUDENT = "INSERT INTO student (id,name,city,email,level) VALUES (?,?,?,?,?)";
     static String GET_STUDENT = "SELECT * FROM student WHERE id=?";
     static String UPDATE_STUDENT = "UPDATE student SET name=?,city=?,email=?,level=? WHERE id=?";
     static String DELETE_STUDENT = "DELETE FROM student WHERE id=?";
+
     @Override
     public StudentDTO getStudent(String studentId, Connection connection) throws SQLException {
         var studentDTO = new StudentDTO();
@@ -26,11 +27,12 @@ public final class  StudentDataProcess implements StudentData {
                 studentDTO.setEmail(resultSet.getString("email"));
                 studentDTO.setLevel(resultSet.getString("level"));
             }
-        }catch (SQLException e) {
+        } catch (SQLException e) {
             e.printStackTrace();
         }
         return studentDTO;
     }
+
     @Override
     public boolean saveStudent(StudentDTO studentDTO, Connection connection) {
         try {
@@ -53,7 +55,7 @@ public final class  StudentDataProcess implements StudentData {
             var ps = connection.prepareStatement(DELETE_STUDENT);
             ps.setString(1, studentId);
             return ps.executeUpdate() != 0;
-        }catch (SQLException e){
+        } catch (SQLException e) {
             throw new RuntimeException();
         }
 
